@@ -1,120 +1,106 @@
 import React from "react"
 import Intro from "./Intro"
 import Question from "./Question"
-import {nanoid} from "nanoid"
+import Questions from "./Questions"
+import { nanoid } from "nanoid"
 
 export default function App() {
-    //console.log(nanoid())
-    const [quiz, setQuiz] = React.useState(false)
-    const [questions, setQuestions] = React.useState([{
+    const [quiz, setQuiz] = React.useState(true)
+    const [showCorrect, setShowCorrect] = React.useState(false)
+    const [questions, setQuestions] = React.useState([])
+    const [questionsWithAnswers, setQuestionsWithAnswers] = React.useState([{
         id: 0,
-        category: "",
-        type: "",
-        difficulty: "",
         question: "",
-        correct_answer: "",
-        incorrect_answers: [""],
-        //answerChosen: false,
-        correctAnswerChecked: false
+        answers: [],
+        correctAnswer: "",
+        selectedAnswer: ""
     }])
-    
-    
-    function startQuiz(){
+
+    function startQuiz() {
         setQuiz(oldQuiz => !oldQuiz)
     }
-    
-  
-  React.useEffect(() => {
+
+    React.useEffect(() => {
         fetch("https://opentdb.com/api.php?amount=5")
             .then(res => res.json())
             .then(data => {
-                let qArray = []
-                for(let i=0;i<data.results.length;i++){
+                setQuestions(data.results)
+                let questionsWithAnswersArray = []
+                data.results.map(result => {
+                    let answersArray = result.incorrect_answers
+                    answersArray.push(result.correct_answer)
+                    answersArray = answersShuffle(answersArray)
+                    //answersArray.push(answer)
                     let question = {
-                        ...data.results[i],
                         id: nanoid(),
-                        //answerChosen: false,
-                        correctAnswerChecked: false
+                        question: result.question,
+                        answers: answersArray,
+                        correctAnswer: result.correct_answer,
+                        selectedAnswer: ""
                     }
-                    qArray.push(question)
-                }
-               setQuestions(qArray)
-            })  
+                    questionsWithAnswersArray.push(question)
+                })
+                setQuestionsWithAnswers(questionsWithAnswersArray)
+            })
     }, [])
-          
-    //console.log(questions)
-    
-    
-    function questionsArray() {
-        return (
-            questions.map( question => 
-                <Question 
-                    key={question.id} 
-                    question={question} 
-                    answerChecked={answerChecked}
-                />)
-        )
-    }
-    //console.log(questions)
- 
-    function answerChecked(answer, id){
-        let questionAnswered
 
-        questions.map( question => {
-            if(question.id === id){
-                questionAnswered = question
-            }
-        })
-        if(answer === questionAnswered.correct_answer){
-            console.log(`good answer!`)
-        }else {
-            console.log(`Wrong! Correct answer is ${questionAnswered.correct_answer}`)
-        }
 
-      /*
-      setQuestions(oldQuestions => 
-        oldQuestions.map( question => {
-            return question.id === id ? 
-                {...question, answerChosen: true} :
-                {...question, answerChosen: false}
+    function answersShuffle(arrayOfAnswers) {
+        const randomNumber = Math.ceil(Math.random() * arrayOfAnswers.length)
+        for (let i = 0; i < randomNumber; i++) {
+            let answer = arrayOfAnswers.pop()
+            arrayOfAnswers.unshift(answer)
         }
-            )
-      )
-      */
-      setQuestions(oldQuestions => 
-        oldQuestions.map( question => {
-            return answer === question.correct_answer ? 
-                {...question, correctAnswerChecked: !question.correctAnswerChecked} :
-                question
-        }
-            )
-      )
-      
+        return arrayOfAnswers
     }
 
-    function checkAllAnswers() {
-        questions.map (question => {
-            console.log(question.correctAnswerChecked)
+    function generateQuestion(questionAndAnswer) {
+        return <Question
+            key={questionAndAnswer.id}
+            question={questionAndAnswer}
+            selectAnswer={selectAnswer}
+            showCorrect={showCorrect}
+        />
+    }
+
+    function generateQuestions(questionsAndAnswers) {
+        const questionsAndAnswersArray = questionsAndAnswers.map(questionAndAnswer => generateQuestion(questionAndAnswer))
+        return <Questions questions={questionsAndAnswersArray} />
+    }
+    function selectAnswer(answeredQuestion, selectedAnswer) {
+        setQuestionsWithAnswers(oldQuestionsWithAnswers => {
+            return oldQuestionsWithAnswers.map(questionWithAnswer => {
+                return answeredQuestion === questionWithAnswer.question ?
+                    { ...questionWithAnswer, selectedAnswer: selectedAnswer } :
+                    questionWithAnswer
+            })
         })
     }
-   
-    
+
+    function checkAnswers() {
+        questionsWithAnswers.map(q => console.log(q.selectedAnswer))
+        setShowCorrect(oldShowCorrect => !oldShowCorrect)
+
+    }
+
     return (
         <div className="intro--container">
-        { quiz 
-        ?
-        <div>
-        {questionsArray()}
-        <button
-        onClick={checkAllAnswers}
-        >
-          
-         Check answers 
-        </button>
-        </div>
-        : 
-        <Intro startQuiz={startQuiz}/>
-        }
+            {quiz
+                ?
+                <div >
+                    <Intro startQuiz={startQuiz} />
+                </div>
+                :
+                <div>
+                    {generateQuestions(questionsWithAnswers)}
+                    <button
+                        className="check--button"
+                        onClick={checkAnswers}
+                    >Check Answers</button>
+                </div>
+            }
         </div>
     )
+
+
 }
