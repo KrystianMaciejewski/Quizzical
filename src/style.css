@@ -1,0 +1,35 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Karla', sans-serif;
+}
+.body {
+    background-color: #F5F7FB;
+}
+
+.intro--container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+}
+
+button {
+    border: 1px solid #4D5B9E;
+    border-radius: 5px;
+    margin: 5px;
+    padding: 3px 10px;
+    font-family: 'Inter', sans-serif;
+    color: #293264;
+    font-weight: 500;
+    font-size: 15px;
+    background-color: #F5F7FB;
+}
+button.chosen {
+    background-color: red;
+}
+.question {
+    font-weight: 700;
+    font-size: 20px;
+}
