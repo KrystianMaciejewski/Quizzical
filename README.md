@@ -1,9 +1,6 @@
-# header H1 
-Quizzical - quizz app
+# Quizzical - quizz app
 
-### header H3
-
-Simple quizz app created with React
+### Simple quizz app created with React
 
 ## Setup
 To run this project, install it locally using npm:
